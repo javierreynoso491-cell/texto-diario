@@ -11,13 +11,14 @@ document.getElementById("date").innerText =
     day: "numeric"
   });
 
-// Use jw.org official daily text page
-const url = `https://www.jw.org/es/biblioteca/libros/examinando-las-escrituras-diariamente/${year}/${month}/${day}/`;
+const jwUrl = `https://www.jw.org/es/biblioteca/libros/examinando-las-escrituras-diariamente/${year}/${month}/${day}/`;
+
+// New reliable proxy
+const proxyUrl = "https://corsproxy.io/?";
 
 async function fetchText() {
   try {
-    const proxy = "https://api.allorigins.win/raw?url=";
-    const response = await fetch(proxy + encodeURIComponent(url));
+    const response = await fetch(proxyUrl + encodeURIComponent(jwUrl));
     const html = await response.text();
 
     const parser = new DOMParser();
@@ -30,12 +31,11 @@ async function fetchText() {
       throw new Error("Contenido no encontrado");
     }
 
-    const verse = verseElement.innerText;
-    const text = paragraphElement.innerText;
+    const verse = verseElement.innerText.trim();
+    const text = paragraphElement.innerText.trim();
 
     document.getElementById("verse").innerText = verse;
-    document.getElementById("preview").innerText =
-      text.substring(0, 150) + "...";
+    document.getElementById("preview").innerText = text.substring(0, 150) + "...";
     document.getElementById("fullText").innerText = text;
 
   } catch (error) {
