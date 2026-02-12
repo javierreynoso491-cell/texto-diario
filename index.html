@@ -1,21 +1,471 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Texto Diario</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Texto Diario</title>
+
+  <style>
+    :root{
+      --bg:#f6f0e6;
+      --text:#111;
+      --muted:#3a3a3a;
+      --line:rgba(0,0,0,.18);
+      --border:rgba(0,0,0,.45);
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:"Times New Roman", Georgia, serif;
+      display:grid;
+      place-items:center;
+    }
+    .card{
+      width:min(760px,92vw);
+      padding:28px 26px;
+      text-align:center;
+      animation:fadeIn .5s ease;
+    }
+    .date{
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:14px;
+      text-transform:capitalize;
+    }
+    .divider{
+      height:1px;
+      width:min(420px,80%);
+      margin:16px auto 18px;
+      background:linear-gradient(to right, transparent, var(--line), transparent);
+    }
+    .verse{
+      font-size:16px;
+      line-height:1.55;
+      margin:0 0 16px 0;
+    }
+    .btn{
+      background:transparent;
+      border:1px solid var(--border);
+      padding:10px 14px;
+      font-family:inherit;
+      font-size:14px;
+      cursor:pointer;
+      transition:background .25s ease, color .25s ease, transform .25s ease;
+    }
+    .btn:hover{
+      background:#111;
+      color:#fff;
+      transform:translateY(-1px);
+    }
+    .expanded{
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      transform:translateY(-6px);
+      transition:max-height 420ms ease, opacity 420ms ease, transform 420ms ease;
+      margin-top:14px;
+      text-align:left;
+    }
+    .expanded.is-open{
+      max-height:5000px;
+      opacity:1;
+      transform:translateY(0);
+    }
+    .body{
+      line-height:1.7;
+      font-size:16px;
+      margin:0;
+      white-space:pre-wrap;
+    }
+    @keyframes fadeIn{
+      from{opacity:0}
+      to{opacity:1}
+    }
+  </style>
 </head>
+
 <body>
+  <main class="card">
+    <div id="date" class="date"></div>
+    <div class="divider"></div>
 
-<div class="card" id="card">
-  <h2 id="date"></h2>
-  <h3 id="verse"></h3>
-  <p id="preview"></p>
-  <button id="expandBtn">Leer más</button>
-  <p id="fullText" class="hidden"></p>
-</div>
+    <p id="verse" class="verse"></p>
 
-<script src="script.js"></script>
+    <button id="toggle" class="btn" type="button">Leer más</button>
+
+    <section id="expanded" class="expanded" aria-hidden="true">
+      <p id="body" class="body"></p>
+    </section>
+  </main>
+
+  <script>
+    // ====== TEXTOS (2/11/2026 -> 3/11/2026) ======
+    const texts = {
+      "2026-02-11": {
+        verse: "Cada uno llevará su propia carga de responsabilidad (Gál. 6:5).",
+        body:
+`¿Necesitan los cristianos maduros que en ocasiones los ayuden? Sí. Hay veces en las que quizás necesiten pedir ayuda. Un cristiano inmaduro tal vez espere que los demás decidan por él o le digan qué hacer, mientras que un cristiano maduro aprovecha la sabiduría y los consejos de los hermanos con más experiencia pero sabe que tiene que llevar “su propia carga de responsabilidad”.
+
+Así como no todas las personas adultas tienen las mismas características físicas, no todos los cristianos maduros tienen las mismas cualidades espirituales. Por ejemplo, algunos destacan por su sabiduría, otros por su valor, otros por su generosidad y otros por su empatía. Además, es posible que dos cristianos maduros lleguen a conclusiones distintas sobre un mismo asunto —en especial en temas de conciencia— y que las dos conclusiones sean válidas desde el punto de vista bíblico. Por eso, ninguno criticará lo que decida el otro, sino que los dos se esforzarán por mantener la unidad (Rom. 14:10; 1 Cor. 1:10).`
+      },
+
+      "2026-02-12": {
+        verse: "Cuando las preocupaciones me abrumaban, tú me consolabas y me tranquilizabas (Sal. 94:19).",
+        body:
+`¿Qué puedes hacer si sientes que no vales nada? Lee textos de la Biblia que te confirmen que Jehová te valora, y medita en ellos. Si no alcanzaste una meta o no puedes hacer tanto como otros, no te desanimes ni seas demasiado duro contigo mismo. Jehová es razonable y no espera de ti más de lo que puedes hacer (Sal. 103:13, 14).
+
+Si sufriste maltratos o abusos, no te culpes por lo que otra persona te hizo. No fue culpa tuya ni hiciste nada para merecerlo. Recuerda que Dios les pedirá cuentas a los que hacen cosas malas, no a las víctimas (1 Ped. 3:12).
+
+Aunque a veces te cueste creerlo, Jehová puede usarte para ayudar a otros. Te ha dado el honor de colaborar con él en la predicación (1 Cor. 3:9). Es muy probable que debido a tus vivencias del pasado ahora seas más empático y comprendas mejor los sentimientos de otras personas. Puedes hacerles mucho bien.`
+      },
+
+      "2026-02-13": {
+        verse: "¿No se va a encargar Dios de que se les haga justicia a los escogidos suyos…? (Luc. 18:7, 8).",
+        body:
+`A Jehová le importa muchísimo cómo nos tratan. “Jehová ama la justicia” (Sal. 37:28). Jesús dijo que Dios “se encargará de que se les haga justicia rápidamente” a sus siervos en el momento indicado. Y pronto eliminará todo el sufrimiento y no permitirá que suframos injusticias nunca más (Sal. 72:1, 2).
+
+Mientras esperamos a que llegue el momento en el que reine la justicia, Jehová nos enseña cómo reaccionar ante las injusticias (2 Ped. 3:13). Por ejemplo, nos muestra qué debemos hacer para no empeorar las cosas. También nos da un modelo perfecto a seguir: el de su Hijo. Y en la Biblia nos ofrece consejos muy útiles que podemos aplicar cuando se nos trata injustamente.`
+      },
+
+      "2026-02-14": {
+        verse: "Denles de comer (Mat. 14:16).",
+        body:
+`La petición de Jesús a sus apóstoles de alimentar a la multitud era un gran problema porque había unos 5.000 hombres. Y, si se añaden las mujeres y los niños, pueden haber sido unas 15.000 personas (Mat. 14:21). Andrés dijo: “Aquí hay un niño que tiene cinco panes de cebada y dos pescaditos. Pero ¿qué es eso para tanta gente?” (Juan 6:9).
+
+El pan de cebada era común y barato, y los pescaditos quizás fueran secos y salados. En cualquier caso, esa cantidad no alcanzaría para alimentar a tanta gente. Como Jesús quería ser hospitalario, le pidió a la multitud que se sentara por grupos en la hierba (Mar. 6:39, 40; Juan 6:11-13).
+
+La Biblia dice que Jesús le dio gracias a su Padre por el pan y los pescaditos. Fue muy apropiado que lo hiciera, porque en realidad fue Dios el que proporcionó la comida. Esto nos recuerda que debemos seguir el ejemplo de Jesús y orar antes de comer. Después, Jesús hizo que se distribuyera la comida, y la multitud comió hasta quedar satisfecha.`
+      },
+
+      "2026-02-15": {
+        verse: "Alaben a Jehová su Dios (1 Crón. 29:20).",
+        body:
+`Cuando Jesús estuvo en la Tierra, le dio gloria a su Padre de muchas maneras. Por ejemplo, siempre explicaba que sus milagros los hacía mediante el poder de Jehová (Mar. 5:18-20). También le daba gloria por su forma de hablar de él y por la manera en que trataba a los demás.
+
+En cierta ocasión, Jesús estaba enseñando en una sinagoga y entre los presentes había una mujer que llevaba 18 años poseída por un demonio. Por culpa de ese demonio, estaba muy encorvada y no se podía enderezar. ¡Qué situación tan terrible! Al darse cuenta de lo mucho que debía de estar sufriendo, Jesús se compadeció de ella y le dijo con cariño: “Mujer, quedas libre de tu debilidad”. Luego, puso las manos sobre ella, y al instante ella se enderezó y “comenzó a darle gloria a Dios” (Luc. 13:10-13).
+
+Aquella mujer que había recuperado la salud y la dignidad tenía buenos motivos para darle gloria a Jehová; y nosotros también los tenemos.`
+      },
+
+      "2026-02-16": {
+        verse: "Perdónanos nuestros pecados (Luc. 11:4).",
+        body:
+`Nosotros solos no podemos recuperar todo lo que Adán y Eva perdieron (Sal. 49:7-9). Sin ayuda, no tendríamos la esperanza de vivir para siempre ni de resucitar. Tendríamos el mismo final que los animales (Ecl. 3:19; 2 Ped. 2:12).
+
+Jehová, nuestro Padre que nos quiere, nos ha dado un regalo que paga la deuda del pecado que hemos heredado de Adán. Jesús explicó en qué consiste ese regalo: “Dios amó tanto al mundo que entregó a su Hijo unigénito para que nadie que demuestre tener fe en él sea destruido, sino que tenga vida eterna” (Juan 3:16).
+
+Ese regalo también nos permite disfrutar de una buena relación con Jehová. Podemos beneficiarnos de ese maravilloso regalo y recibir el perdón de nuestros pecados.`
+      },
+
+      "2026-02-17": {
+        verse: "Saulo se levantó y fue bautizado (Hech. 9:18).",
+        body:
+`¿Qué ayudó a Saulo a bautizarse? Cuando Jesús le habló desde el cielo, una luz brillante dejó ciego a Saulo (Hech. 9:3-9). Durante tres días no comió nada y seguro que estuvo meditando en lo que le había pasado. Se convenció de que Jesús era el Mesías y de que los cristianos eran la religión verdadera.
+
+El ejemplo de Saulo nos enseña varias lecciones. Él podría haber dejado que el orgullo o el miedo le impidieran bautizarse. Pero no dejó que nada lo frenara. Tomó la decisión de hacerse cristiano aunque sabía que sería perseguido (Hech. 9:15, 16; 20:22, 23).
+
+Después de su bautismo, siguió confiando en la ayuda de Jehová al enfrentarse a todo tipo de pruebas (2 Cor. 4:7-10). Cuando usted se bautice como testigo de Jehová, puede que sufra pruebas o algún tipo de oposición, pero no estará solo. Jehová y Jesús siempre estarán a su lado para apoyarlo (Filip. 4:13).`
+      },
+
+      "2026-02-18": {
+        verse: "No corro sin una meta (1 Cor. 9:26).",
+        body:
+`Leer la Biblia es una buena meta, pero si queremos sacarle el máximo beneficio tenemos que hacer algo más. Pensemos en el siguiente ejemplo. La lluvia es esencial para las plantas. Pero, si cae demasiada agua en poco tiempo, la tierra puede saturarse. En ese caso, más lluvia no causa ningún beneficio.
+
+Es mejor que la lluvia caiga poco a poco, porque así la tierra tiene tiempo para absorberla y las plantas pueden crecer. De la misma manera, debemos evitar leer la Biblia con tanta prisa que no logremos absorber lo que leemos y luego recordarlo y aplicarlo (Sant. 1:24).
+
+Supongamos que está leyendo la Biblia y nota que va a toda prisa. ¿Qué puede hacer? Trate de ir más despacio y leer a un ritmo que le permita meditar en lo que está leyendo o acaba de leer. Podría prolongar el periodo de estudio para incluir tiempo para meditar.`
+      },
+
+      "2026-02-19": {
+        verse: "Sean obedientes y sumisos a los que los dirigen (Heb. 13:17).",
+        body:
+`Los ancianos leen con mucha atención las instrucciones que reciben y luego las siguen lo mejor que pueden. Reciben instrucciones sobre cómo deben hacerse las asignaciones y las oraciones en la reunión, pero también sobre cómo deben cuidar a las ovejas de Cristo.
+
+Cuando los ancianos siguen todas las instrucciones que les da la organización, los hermanos sienten que Jehová los quiere y los está cuidando. Cuando los ancianos nos den una instrucción, lo mejor que podemos hacer es seguirla de buena gana. Así les hacemos más fácil cumplir con su responsabilidad.
+
+La Biblia nos dice que seamos obedientes y sumisos a los que nos dirigen (Heb. 13:7, 17). Eso no siempre es fácil, porque los ancianos son imperfectos. Pero recordemos que, si en vez de centrarnos en sus cosas buenas nos obsesionamos con sus defectos, estaríamos haciendo justo lo que quieren nuestros enemigos.
+
+¿Por qué decimos esto? Porque, si pensamos mal de los ancianos, podemos terminar desconfiando de la organización de Dios.`
+      },
+
+      "2026-02-20": {
+        verse: "Él separará a las personas unas de otras (Mat. 25:32).",
+        body:
+`¿Qué pasará con todas las personas que mueran durante la gran tribulación? ¿Serán destruidas para siempre y por tanto no tendrán la oportunidad de resucitar?
+
+La Biblia deja claro que quienes no van a resucitar son las personas a las que Jehová y sus ejércitos destruyan en el Armagedón por haberse opuesto abiertamente a él (2 Tes. 1:6-10).
+
+Pero ¿y qué decir de quienes mueran durante la gran tribulación debido a causas naturales, accidentes o a manos de otras personas? (Ecl. 9:11; Zac. 14:13). ¿Puede ser que algunos de ellos estén entre los “injustos” que resucitarán en el nuevo mundo? (Hech. 24:15).
+
+La verdad, no lo sabemos. Pero hay varias cosas que sí sabemos sobre los acontecimientos futuros. Por ejemplo, sabemos que en el Armagedón las personas serán tratadas de acuerdo con cómo hayan tratado a los hermanos de Cristo (Mat. 25:40). Y quienes hayan dado su apoyo a los ungidos y a Cristo serán tratados como ovejas (Apoc. 12:17).`
+      },
+
+      "2026-02-21": {
+        verse: "¡Jehová vive! ¡Alabada sea mi Roca! (Sal. 18:46).",
+        body:
+`La Biblia dice que los tiempos en los que vivimos son “críticos y difíciles de soportar” (2 Tim. 3:1). En este sistema todo el mundo tiene problemas, pero los siervos de Dios además tenemos que lidiar con oposición y persecución.
+
+¿Qué nos puede ayudar a seguir adorando a Jehová a pesar de todo? Una de las principales cosas es recordar que Jehová es “el Dios vivo” (Jer. 10:10; 2 Tim. 1:12).
+
+Jehová es una persona real que nos da su apoyo durante las dificultades y busca oportunidades para ayudarnos (2 Crón. 16:9; Sal. 23:4). Verlo como el Dios vivo nos dará las fuerzas para aguantar cualquier problema.`
+      },
+
+      "2026-02-22": {
+        verse: "La senda de los justos es como la luz brillante de la mañana… (Prov. 4:18).",
+        body:
+`Debemos confiar siempre en la organización de Jehová. Cuando quienes dirigen la organización ven con claridad que hay que ajustar la manera de entender cierta verdad bíblica o de organizar algún aspecto de nuestra obra, no dudan en hacer los cambios necesarios. Los hacen porque por encima de todo quieren agradar a Jehová.
+
+Además, se esfuerzan al máximo por basar sus decisiones en la Palabra de Dios, el modelo al que debemos aferrarnos todos los siervos de Jehová. El apóstol Pablo aconsejó: “Sigue aferrándote al modelo de palabras sanas” (2 Tim. 1:13).
+
+¿Qué es el “modelo de palabras sanas”? Las enseñanzas cristianas que están en la Biblia (Juan 17:17). Esas enseñanzas son la base de todas nuestras creencias. La organización de Jehová nos ha enseñado a seguir de cerca ese modelo. Si siempre lo hacemos, nos irá bien.`
+      },
+
+      "2026-02-23": {
+        verse: "Jehová es paciente con ustedes… (2 Ped. 3:9).",
+        body:
+`El apóstol Pedro vivió de primera mano lo que es arrepentirse y recibir perdón. Así que pudo enseñarles a otros sobre estos temas.
+
+Tiempo después de la Fiesta de Pentecostés, les dio un discurso a una multitud de judíos en el que les dijo que ellos habían matado al Mesías, pero con cariño añadió: “De modo que arrepiéntanse y den media vuelta para que sus pecados sean borrados, y así el propio Jehová haga venir tiempos de alivio” (Hech. 3:14, 15, 17, 19).
+
+Con esas palabras, mostró que quien se arrepiente debe dar media vuelta, es decir, cambiar su manera de pensar, abandonar el mal camino y empezar a andar por el buen camino haciendo las cosas que le agradan a Dios.
+
+El apóstol dijo que Jehová borraría sus pecados, los haría desaparecer por completo. ¡Qué bonito es saber que Jehová nos puede perdonar por completo, incluso si cometemos pecados muy graves!`
+      },
+
+      "2026-02-24": {
+        verse: "Que su modo de vivir esté libre del amor al dinero (Heb. 13:5).",
+        body:
+`Tener una fe fuerte en que el fin de este sistema llegará en cualquier momento nos ayudará a no caer en el materialismo. Durante la gran tribulación, el dinero no tendrá ningún valor. La Biblia dice que las personas “arrojarán su plata por las calles” cuando se den cuenta de que “ni su plata ni su oro podrán salvarlos en el día de la furia de Jehová” (Ezeq. 7:19).
+
+En lugar de concentrarnos en ganar más y más dinero, lo mejor es tomar decisiones que nos ayuden a tener una vida sencilla y equilibrada. Eso incluye resistir la tentación de meternos en deudas innecesarias o de enredarnos atendiendo tantas cosas materiales que ya no nos quede tiempo para nada más.
+
+También debemos tener mucho cuidado de no apegarnos demasiado a lo que poseemos (Mat. 6:19, 24). Es probable que, a medida que se acerque el fin, tengamos que demostrar si confiamos más en Jehová o en nuestras pertenencias.`
+      },
+
+      "2026-02-25": {
+        verse: "El que piensa que está de pie, que tenga cuidado de no caer (1 Cor. 10:12).",
+        body:
+`Es probable que podamos vencer algunas de nuestras debilidades, pero tal vez haya otras que nos cueste controlar. Eso fue lo que le pasó al apóstol Pedro con el miedo al hombre. Él negó conocer a Jesús tres veces (Mat. 26:69-75). Tiempo después, dio testimonio con valor delante del Sanedrín. Así que parecía que había vencido ese miedo (Hech. 5:27-29).
+
+Pero unos años más tarde “por miedo a los del grupo de los circuncisos” dejó de comer por un tiempo con los cristianos de origen no judío (Gál. 2:11, 12). Su debilidad volvió a asomar la cabeza. Quién sabe si alguna vez logró deshacerse de ella por completo.
+
+Puede que a nosotros nos pase algo parecido. Sin embargo, podemos evitar que una debilidad nos lleve a cometer un pecado siguiendo el consejo de Jesús: “Manténganse despiertos” (Mat. 26:41). Incluso cuando usted sienta que lo tiene todo bajo control, siga evitando las situaciones que puedan llevarlo a caer en la tentación. Continúe utilizando los métodos que le han dado buen resultado (2 Ped. 3:14).`
+      },
+
+      "2026-02-26": {
+        verse: "Dio hombres como regalos (Efes. 4:8).",
+        body:
+`Ningún ser humano ha sido tan generoso como Jesús. Por ejemplo, cuando estaba en la Tierra, usó su poder para hacer milagros y así ayudar a muchas personas (Luc. 9:12-17). Y nos hizo el mayor regalo de todos al dar su vida por nosotros (Juan 15:13).
+
+Desde que resucitó, ha continuado siendo muy generoso. Tal y como prometió, le ha pedido a Jehová que use su espíritu santo para enseñarnos y consolarnos (Juan 14:16, 17, nota; 16:13).
+
+Además, por medio de las reuniones de congregación, Jesús nos capacita para hacer discípulos por toda la Tierra (Mat. 28:18-20).
+
+El apóstol Pablo escribió que, cuando Jesús subió al cielo, “dio hombres como regalos” (Efes. 4:7, 8). Explicó que Jesús nos los dio para ayudar a la congregación de varias maneras (Efes. 1:22, 23; 4:11-13). Claro está, estos hombres son imperfectos y cometen errores (Sant. 3:2). Pero son un valioso regalo que nuestro Señor Jesucristo utiliza para ayudarnos.`
+      },
+
+      "2026-02-27": {
+        verse: "El discernimiento te protegerá (Prov. 2:11).",
+        body:
+`David le dijo a su hijo Salomón que solo tendría éxito mientras obedeciera a Jehová Dios. Lamentablemente, al final de su vida comenzó a adorar a otros dioses. Como resultado, Jehová le retiró su favor y Salomón ya no tuvo la sabiduría necesaria para gobernar con justicia y rectitud (1 Rey. 11:9, 10; 12:4).
+
+¿Cuál es la lección para nosotros? La obediencia resulta en éxito (Sal. 1:1-3). Claro, Jehová no promete que nos dará las riquezas y la gloria de Salomón. Pero, si lo obedecemos, nos dará la sabiduría necesaria para tomar buenas decisiones (Prov. 2:6, 7; Sant. 1:5).
+
+Sus principios son muy prácticos y nos ayudan en temas como el empleo, la educación, el entretenimiento y el dinero. Dejarnos guiar por la sabiduría de Dios impedirá que suframos daños permanentes (Prov. 2:10, 11). Tendremos buenas amistades y contaremos con la guía que necesitamos para disfrutar de una vida de familia feliz.`
+      },
+
+      "2026-02-28": {
+        verse: "Comprueben todas las cosas y aférrense a lo que está bien (1 Tes. 5:21).",
+        body:
+`Los padres tienen muchas oportunidades de hablar con sus hijos sobre la Biblia y la fe en Dios. Por ejemplo, pueden mantener interesantes conversaciones durante la visita a un museo. Podrían destacar objetos o acontecimientos históricos que refuercen la convicción de sus hijos de que la Biblia es exacta.
+
+¿Saben ellos que el nombre de Dios aparece en una losa de 3.000 años de antigüedad conocida como la piedra moabita? Se puede ver una réplica en la exposición “La Biblia y el nombre divino” de la central mundial de los testigos de Jehová, en Warwick (Nueva York).
+
+La piedra moabita registra que el rey Mesá de Moab se rebeló contra Israel. Y eso está de acuerdo con lo que dice la Biblia (2 Rey. 3:4, 5).
+
+La fe de sus hijos se fortalecerá cuando vean con sus propios ojos pruebas de que la Biblia dice la verdad y es exacta.`
+      },
+
+      "2026-03-01": {
+        verse: "El que muere queda absuelto de su pecado (Rom. 6:7).",
+        body:
+`La Biblia habla de personas justas que se volvieron injustas, como por ejemplo el rey Salomón. Él conocía muy bien a Jehová y sabía cómo había que adorarlo, y recibió muchas bendiciones de parte de él. Pero con el tiempo empezó a adorar a dioses falsos. Eso enojó mucho a Jehová, y toda la nación sufrió durante siglos por culpa de los pecados de Salomón.
+
+Es cierto que la Biblia dice que, cuando murió, “descansó con sus antepasados”, entre ellos el fiel rey David (1 Rey. 11:5-9, 43; 2 Rey. 23:13). Ahora bien, ¿el tipo de entierro que recibió indica que sí va a resucitar? La Biblia no lo dice.
+
+La resurrección es un regalo que Jehová les concede por amor a las personas que quiere que tengan la oportunidad de servirle para siempre (Job 14:13, 14; Juan 6:44). ¿Será Salomón una de esas personas? Jehová sabe la respuesta; nosotros no. Lo que sí sabemos es que Jehová hará lo que es justo.`
+      },
+
+      "2026-03-02": {
+        verse: "Seré huésped en tu tienda para siempre (Sal. 61:4).",
+        body:
+`Entramos en la “tienda” de Jehová cuando le dedicamos nuestra vida. Allí disfrutamos de alimento espiritual en abundancia y de la compañía de otros invitados de Jehová.
+
+Pero ¿dónde se encuentra esta tienda simbólica? No está en un solo lugar; está en cualquier lugar donde hay siervos obedientes de Jehová (Apoc. 21:3).
+
+¿Y qué hay de los siervos de Jehová que murieron fieles? ¿Siguen siendo huéspedes en su tienda? Sí. ¿Por qué llegamos a esta conclusión? Porque la Biblia muestra que están vivos en la memoria de Jehová.
+
+Jesús explicó: “Que los muertos son resucitados, hasta Moisés lo reveló en el relato de la zarza, cuando llamó a Jehová ‘el Dios de Abrahán, el Dios de Isaac y el Dios de Jacob’. Él no es Dios de muertos, sino de vivos, porque para él todos ellos están vivos” (Luc. 20:37, 38).`
+      },
+
+      "2026-03-03": {
+        verse: "Jehová es mi fuerza y mi escudo (Sal. 28:7).",
+        body:
+`Sadoc fue a Hebrón armado y preparado para la guerra (1 Crón. 12:38). Estaba dispuesto a seguir a David a cualquier batalla y a defender a Israel de sus enemigos. Probablemente no tenía mucha experiencia como guerrero, pero valentía tenía de sobra.
+
+¿Cómo logró Sadoc ser tan valiente? De seguro el buen ejemplo de otros hombres fuertes y valientes que tenía a su alrededor lo ayudó mucho. Uno de ellos fue David. Como “dirigía a Israel en sus campañas militares” con tanto valor, todo Israel estuvo de acuerdo en hacerlo rey (1 Crón. 11:1, 2). David confiaba en Jehová y acudía a él cuando sus enemigos lo perseguían (Sal. 138:3).
+
+Sadoc también contó con el buen ejemplo de otros hombres valientes de su época, como Jehoiadá y su hijo guerrero, Benaya, y los 22 jefes tribales que se pusieron de parte de David (1 Crón. 11:22-25; 12:26-28).`
+      },
+
+      "2026-03-04": {
+        verse: "En su bondad Dios está tratando de llevarte hacia el arrepentimiento (Rom. 2:4).",
+        body:
+`Saulo de Tarso persiguió de manera cruel y despiadada a los seguidores de Cristo. Así que, de seguro, a la mayoría de ellos les parecía imposible que cambiara. Pero Jesús no tenía esa visión tan limitada. Tanto él como su Padre se fijaron en las buenas cualidades de Saulo.
+
+Jesús dijo: “Este hombre es un instrumento escogido por mí” (Hech. 9:15). Incluso usó un milagro para ayudarlo a arrepentirse (Hech. 7:58-8:3; 9:1-9, 17-20).
+
+Tiempo después, cuando Saulo se hizo cristiano y era conocido como el apóstol Pablo, muchas veces dio gracias por la bondad y la misericordia con la que Jehová y Jesús lo habían tratado (1 Tim. 1:12-15).
+
+En cierta ocasión, Pablo se enteró de que se había armado un escándalo porque había un problema de inmoralidad sexual en la congregación de Corinto. ¿Cómo manejó el problema? Lo que hizo nos enseña mucho sobre el amor y la disciplina de Jehová, y sobre la importancia de mostrar misericordia.`
+      },
+
+      "2026-03-05": {
+        verse: "El Hijo de Dios fue manifestado… para deshacer las obras del Diablo (1 Juan 3:8).",
+        body:
+`¿Cómo podrían los seres humanos imperfectos acercarse a Jehová? Él lo fue aclarando poco a poco a lo largo de los siglos.
+
+Después de la rebelión de Adán y Eva, el primer ser humano que tuvo fe en Jehová fue el segundo hijo de ellos, Abel. Él amaba a Jehová y quería agradarle y acercarse a él. Y por eso decidió hacer un sacrificio.
+
+Como era pastor, tomó varios “primogénitos de su rebaño” y se los ofreció a Jehová. ¿Y qué hizo Dios? “Aprobó a Abel y su ofrenda” (Gén. 4:4).
+
+Más tarde, también aprobó sacrificios parecidos que le hicieron personas que lo amaban y confiaban en él, como Noé (Gén. 8:20, 21). Esto mostró que los seres humanos, a pesar de ser imperfectos, podían agradarle y acercarse a él.`
+      },
+
+      "2026-03-06": {
+        verse: "Mis pies casi se habían desviado… (Sal. 73:2).",
+        body:
+`Es posible que nos sintamos muy heridos y angustiados por culpa de una injusticia (Ecl. 7:7). Siervos fieles como Job y Habacuc se sintieron así (Job 6:2, 3; Hab. 1:1-3).
+
+Aunque es normal tener estos sentimientos, debemos tener cuidado con cómo reaccionamos para no hacer algo imprudente y no empeorar todavía más las cosas.
+
+Cuando vemos que quienes cometen injusticias parecen salirse con la suya sin recibir ningún castigo, es posible que nos preguntemos si de verdad vale la pena hacer lo correcto.
+
+Pensemos en el salmista que veía que los malvados maltrataban a los justos y a pesar de todo disfrutaban de la vida. Dijo: “Así son los malvados, para quienes todo es fácil” (Sal. 73:12). Se sentía tan mal por las injusticias que casi perdió de vista lo bueno que era servir a Jehová. Afirmó: “Cuando intentaba comprenderlo, era muy angustioso para mí...” (Sal. 73:14, 16).`
+      },
+
+      "2026-03-07": {
+        verse: "Denle a Jehová lo que le corresponde… por su gloria y fuerza (Sal. 96:7).",
+        body:
+`Le damos gloria a Jehová porque lo respetamos profundamente. Tenemos muchos motivos para respetarlo. Jehová es todopoderoso; su energía no tiene límites (Sal. 96:4-7).
+
+Su inmensa sabiduría se ve con claridad en lo que ha creado. Nos ha dado la vida y todo lo que necesitamos para mantenerla (Apoc. 4:11). Él es leal (Apoc. 15:4). Tiene éxito en cualquier cosa que hace y siempre cumple sus promesas (Jos. 23:14).
+
+Con razón el profeta Jeremías le dijo: “Entre todos los sabios de las naciones y entre todos sus reinos, no hay absolutamente nadie como tú” (Jer. 10:6, 7).
+
+Está claro que tenemos muchísimos motivos para respetar a nuestro Padre celestial. Pero él no solo merece respeto; también se gana nuestro amor. Así que sobre todo le damos gloria a Jehová porque lo amamos con todo nuestro corazón.`
+      },
+
+      "2026-03-08": {
+        verse: "Saquen a la persona malvada que está entre ustedes (1 Cor. 5:13).",
+        body:
+`Nuestros enemigos presentan a la organización de Dios de tal manera que sus cosas buenas parezcan malas.
+
+Por ejemplo, la Biblia enseña que Jehová quiere que sus siervos estén limpios en sentido físico, moral y espiritual. También dice que cualquier persona que lleve una vida sucia y no se arrepienta debe ser sacada de la congregación (1 Cor. 5:11, 12; 6:9, 10).
+
+Como nosotros seguimos ese mandato, los enemigos nos acusan de ser intolerantes y crueles, y de creernos mejores que los demás.
+
+Recordemos cuál es el verdadero origen de los ataques. Satanás, “el padre de la mentira”, está detrás de las historias falsas que se cuentan sobre nuestra organización (Juan 8:44; Gén. 3:1-5). No nos extraña que utilice a ciertas personas para esparcir esas mentiras.`
+      },
+
+      "2026-03-09": {
+        verse: "Se cumplirán (Ezeq. 33:33).",
+        body:
+`Incluso después de que comience la gran tribulación, es posible que algunos que vean la destrucción de “Babilonia la Grande” recuerden que los testigos de Jehová llevaban muchos años anunciando que eso sucedería. ¿Podría ser que algunos decidan ponerse de parte de Jehová? (Apoc. 17:5).
+
+Pensemos en lo que ocurrió en los días de Moisés. Cuando los israelitas salieron de Egipto, con ellos también salió “una multitud de todo tipo de personas” (Éx. 12:38). Tal vez algunas de ellas empezaran a poner su fe en Jehová al ver que las 10 plagas que anunciaba Moisés se cumplían.
+
+Si algo parecido pasa después de que Babilonia la Grande sea destruida, ¿nos parecerá injusto que haya personas que puedan unirse a nosotros justo antes de que llegue el fin? ¡Por supuesto que no!
+
+Queremos imitar a nuestro Padre celestial, que es “un Dios misericordioso y compasivo, paciente y lleno de amor leal y verdad” (Éx. 34:6).`
+      },
+
+      "2026-03-10": {
+        verse: "Sigue aferrándote al modelo de palabras sanas (2 Tim. 1:13).",
+        body:
+`¿Qué podría pasar si dejáramos de aferrarnos “al modelo de palabras sanas”? Veamos algo que ocurrió en el siglo primero.
+
+Algunos cristianos estaban esparciendo el rumor de que el día de Jehová ya había llegado. Es posible que hubiera una carta que afirmaba eso, supuestamente escrita por el apóstol Pablo. Sin molestarse en comprobar los hechos, algunos cristianos de Tesalónica se creyeron el rumor e incluso iban repitiéndolo.
+
+No se habrían dejado engañar si hubieran recordado las cosas que Pablo les había enseñado cuando todavía estaba con ellos (2 Tes. 2:1-5).
+
+El apóstol les aconsejó que no se creyeran todo lo que oían. Y, para que no les volviera a pasar lo mismo, acabó la segunda carta que les escribió con estas palabras: “Yo, Pablo, escribo este saludo con mi propia mano, que es una señal en todas mis cartas. Así es como escribo” (2 Tes. 3:17).`
+      },
+
+      "2026-03-11": {
+        verse: "Ustedes necesitan aguantar (Heb. 10:36).",
+        body:
+`A medida que la situación en Judea se fuera poniendo cada vez más fea, los cristianos hebreos tendrían que aguantar pruebas de fe. Aunque en el pasado algunos habían soportado persecución, muchos habían aceptado la verdad durante un periodo de cierta paz.
+
+Ahora bien, el apóstol Pablo les advirtió que la persecución iba a ser más intensa y que tendrían que estar listos para ser fieles hasta la muerte, igual que Jesús (Heb. 12:4).
+
+Como cada vez había más cristianos, muchos fanáticos judíos se estaban poniendo más y más furiosos. Unos años antes, más de 40 judíos “se comprometieron con una maldición a no comer ni beber hasta que hubieran matado a Pablo” (Hech. 22:22; 23:12-14).
+
+A pesar de estar rodeados de tanta gente que los odiaba, aquellos cristianos tendrían que seguir reuniéndose, predicando y manteniendo su fe fuerte.`
+      }
+    };
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function todayKeyLocal(){
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+
+    function render(){
+      const now = new Date();
+      document.getElementById("date").textContent = new Intl.DateTimeFormat("es-ES",{
+        weekday:"long", day:"numeric", month:"long", year:"numeric"
+      }).format(now);
+
+      const key = todayKeyLocal();
+      const entry = texts[key];
+
+      // reset expand state on day change
+      expanded.classList.remove("is-open");
+      expanded.setAttribute("aria-hidden","true");
+      toggleBtn.textContent = "Leer más";
+
+      if(!entry){
+        document.getElementById("verse").textContent = "Texto no disponible todavía.";
+        document.getElementById("body").textContent = `No hay contenido guardado para: ${key}`;
+        return;
+      }
+      document.getElementById("verse").textContent = entry.verse;
+      document.getElementById("body").textContent = entry.body;
+    }
+
+    function scheduleMidnightRefresh(){
+      const now = new Date();
+      const next = new Date(now);
+      next.setHours(24,0,2,0); // 00:00:02
+      const ms = next - now;
+      setTimeout(() => { render(); scheduleMidnightRefresh(); }, ms);
+    }
+
+    const toggleBtn = document.getElementById("toggle");
+    const expanded = document.getElementById("expanded");
+
+    toggleBtn.addEventListener("click", () => {
+      const open = expanded.classList.toggle("is-open");
+      expanded.setAttribute("aria-hidden", open ? "false" : "true");
+      toggleBtn.textContent = open ? "Cerrar" : "Leer más";
+    });
+
+    render();
+    scheduleMidnightRefresh();
+  </script>
 </body>
 </html>
